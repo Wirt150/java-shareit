@@ -21,7 +21,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ItemServiceTest {
 
-    private final long USER_ID = 1L;
+    private static final long USER_ID = 1L;
     @Autowired
     private ItemService itemService;
     @Autowired
