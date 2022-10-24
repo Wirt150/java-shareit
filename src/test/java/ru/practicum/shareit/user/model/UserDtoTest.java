@@ -19,7 +19,8 @@ class UserDtoTest {
 
         final UserDto userDtoTest = UserDto.builder().id(0L)
                 .email("test@test.test")
-                .name("Name").build();
+                .name("Name")
+                .build();
 
         //test
         assertEquals(0, testingValidator(userDtoTest).size(), "Список должен быть пустой.");
@@ -32,7 +33,8 @@ class UserDtoTest {
         final UserDto userDtoTest = UserDto.builder()
                 .id(0L)
                 .email("")
-                .name("Name").build();
+                .name("Name")
+                .build();
 
         Set<ConstraintViolation<UserDto>> errors = testingValidator(userDtoTest);
         errors.stream().map(ConstraintViolation::getMessage).forEach(System.out::println);

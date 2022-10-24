@@ -24,7 +24,8 @@ class UserServiceTest {
     private final User userTest = User.builder()
             .id(0L)
             .email("email@email.com")
-            .name("Name").build();
+            .name("Name")
+            .build();
 
     @Test
     @DisplayName("Проверяем ошибки сервисного слоя пользователей.")

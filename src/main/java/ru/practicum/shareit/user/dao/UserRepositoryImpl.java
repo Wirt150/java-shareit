@@ -48,13 +48,10 @@ public class UserRepositoryImpl implements UserRepository {
         if (emailCheck(user)) {
             return Optional.empty();
         }
-        if (user.getName() != null) {
-            users.get(id).setName(user.getName());
-        }
-        if (user.getEmail() != null) {
-            users.get(id).setEmail(user.getEmail());
-        }
-        return Optional.of(users.get(id));
+        User userUpdate = users.get(id);
+        Optional.ofNullable(user.getName()).ifPresent(userUpdate::setName);
+        Optional.ofNullable(user.getEmail()).ifPresent(userUpdate::setEmail);
+        return Optional.of(userUpdate);
     }
 
     @Override

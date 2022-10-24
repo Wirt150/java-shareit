@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import ru.practicum.shareit.item.dao.ItemRepository;
 import ru.practicum.shareit.item.error.ItemNotFoundByUserException;
 import ru.practicum.shareit.item.error.ItemNotFoundException;
@@ -47,7 +48,9 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> search(String text) {
-        if (text.isEmpty()) return Collections.emptyList();
+        if (!StringUtils.hasText(text)) {
+            return Collections.emptyList();
+        }
         return itemRepository.search(text.toLowerCase());
     }
 }

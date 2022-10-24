@@ -42,16 +42,11 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public Optional<Item> updateDto(Item item, long id) {
-        if (item.getName() != null) {
-            items.get(id).setName(item.getName());
-        }
-        if (item.getDescription() != null) {
-            items.get(id).setDescription(item.getDescription());
-        }
-        if (item.getAvailable() != null) {
-            items.get(id).setAvailable(item.getAvailable());
-        }
-        return Optional.of(items.get(id));
+        Item itemUpdate = items.get(id);
+        Optional.ofNullable(item.getName()).ifPresent(itemUpdate::setName);
+        Optional.ofNullable(item.getDescription()).ifPresent(itemUpdate::setDescription);
+        Optional.ofNullable(item.getAvailable()).ifPresent(itemUpdate::setAvailable);
+        return Optional.of(itemUpdate);
     }
 
     @Override
