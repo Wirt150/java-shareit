@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.error;
 
-public class ItemNotFoundException extends RuntimeException {
+import javax.persistence.EntityNotFoundException;
+
+public class ItemNotFoundException extends EntityNotFoundException {
     public ItemNotFoundException(Long id) {
-        super(String.format("Вещь с id:%s не найдена.", id));
+        super(String.format("Вещь с id: %s не найдена.", id));
     }
 }

@@ -7,9 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import ru.practicum.shareit.user.entity.User;
 import ru.practicum.shareit.user.error.UserNotFoundException;
 import ru.practicum.shareit.user.error.UserRepeatEmailException;
-import ru.practicum.shareit.user.model.User;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,14 +30,14 @@ class UserServiceTest {
     @Test
     @DisplayName("Проверяем ошибки сервисного слоя пользователей.")
     void whenCheckUserServiceForException() {
-        userService.addDto(userTest);
+        userService.add(userTest);
 
         final RuntimeException exceptionEmail = assertThrows(
                 UserRepeatEmailException.class,
                 new Executable() {
                     @Override
                     public void execute() throws Throwable {
-                        userService.addDto(userTest);
+                        userService.add(userTest);
                     }
                 });
 
@@ -51,12 +51,12 @@ class UserServiceTest {
                 new Executable() {
                     @Override
                     public void execute() throws Throwable {
-                        userService.getDtoById(2);
+                        userService.getById(2);
                     }
                 });
 
         //test
-        assertEquals(exceptionId.getMessage(), String.format(String.format("Пользователь с id:%s не найден.", 2)),
+        assertEquals(exceptionId.getMessage(), String.format(String.format("Пользователь с id: %s не найден.", 2)),
                 "При несуществующем id должна выброситься ошибка");
     }
 }

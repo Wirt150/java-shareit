@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
-import ru.practicum.shareit.user.model.UserDto;
+import ru.practicum.shareit.user.entity.model.UserDto;
 
 import java.util.List;
 
@@ -33,8 +33,8 @@ class UserControllerTest {
     @Test
     @DisplayName("Проверяем метод GET(все id) контроллера user.")
     void whenCheckGetAllIdMethod() {
-        UserDto userDtoOne = userController.create(userDtoTestOne).get();
-        UserDto userDtoTwo = userController.create(userDtoTestTwo).get();
+        UserDto userDtoOne = userController.create(userDtoTestOne);
+        UserDto userDtoTwo = userController.create(userDtoTestTwo);
 
         //test
         List<UserDto> userDtos = userController.findAll();
@@ -46,28 +46,28 @@ class UserControllerTest {
     @Test
     @DisplayName("Проверяем метод GET(id) контроллера user.")
     void whenCheckGetIdMethod() {
-        UserDto userDtoOne = userController.create(userDtoTestOne).get();
-        UserDto userDtoTwo = userController.create(userDtoTestTwo).get();
+        UserDto userDtoOne = userController.create(userDtoTestOne);
+        UserDto userDtoTwo = userController.create(userDtoTestTwo);
 
         //test
-        assertEquals(userDtoOne, userController.findById(1).get(), "Пользователи должны совпадать.");
-        assertNotEquals(userDtoTwo, userController.findById(1).get(), "Пользователи не должны совпадать");
-        assertEquals(userDtoTwo, userController.findById(2).get(), "Пользователи должны совпадать.");
-        assertNotEquals(userDtoOne, userController.findById(2).get(), "Пользователи не должны совпадать.");
+        assertEquals(userDtoOne, userController.findById(1), "Пользователи должны совпадать.");
+        assertNotEquals(userDtoTwo, userController.findById(1), "Пользователи не должны совпадать");
+        assertEquals(userDtoTwo, userController.findById(2), "Пользователи должны совпадать.");
+        assertNotEquals(userDtoOne, userController.findById(2), "Пользователи не должны совпадать.");
     }
 
     @Test
     @DisplayName("Проверяем метод POST контроллера user.")
     void whenCheckCreateMethod() {
-        UserDto userDtoOne = userController.create(userDtoTestOne).get();
-        UserDto userDtoTwo = userController.create(userDtoTestTwo).get();
+        UserDto userDtoOne = userController.create(userDtoTestOne);
+        UserDto userDtoTwo = userController.create(userDtoTestTwo);
 
         //test
-        assertEquals(userDtoOne, userController.findById(1).get(), "Пользователи должны совпадать.");
+        assertEquals(userDtoOne, userController.findById(1), "Пользователи должны совпадать.");
         assertEquals(1, userDtoOne.getId(), "Id должен быть равен 1.");
         assertEquals("TestName1", userDtoOne.getName(), "Имя должно совпадать.");
         assertEquals("test1@test.test", userDtoOne.getEmail(), "Почта должна совпадать.");
-        assertEquals(userDtoTwo, userController.findById(2).get(), "Пользователи должны совпадать.");
+        assertEquals(userDtoTwo, userController.findById(2), "Пользователи должны совпадать.");
         assertEquals("TestName2", userDtoTwo.getName(), "Имя должно совпадать.");
         assertEquals("test2@test.test", userDtoTwo.getEmail(), "Почта должна совпадать.");
     }
@@ -75,14 +75,14 @@ class UserControllerTest {
     @Test
     @DisplayName("Проверяем метод PATCH контроллера user.")
     void whenCheckUpdateMethod() {
-        UserDto userDto = userController.create(userDtoTestOne).get();
+        UserDto userDto = userController.create(userDtoTestOne);
         UserDto updateName = UserDto.builder().name("update").build();
         UserDto updateEmail = UserDto.builder().email("update@update.com").build();
 
         userController.update(updateName, 1);
 
         //test
-        UserDto updateNameTest = userController.findById(1).get();
+        UserDto updateNameTest = userController.findById(1);
         assertNotEquals(userDto, updateNameTest, "Пользователи не должны совпадать.");
         assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
         assertEquals("update", updateNameTest.getName(), "Имя должно совпадать.");
@@ -90,7 +90,7 @@ class UserControllerTest {
         userController.update(updateEmail, 1);
 
         //test
-        UserDto updateEmailTest = userController.findById(1).get();
+        UserDto updateEmailTest = userController.findById(1);
         assertNotEquals(userDto, updateNameTest, "Пользователи не должны совпадать.");
         assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
         assertEquals("update@update.com", updateEmailTest.getEmail(), "Email должен совпадать.");
@@ -99,8 +99,8 @@ class UserControllerTest {
     @Test
     @DisplayName("Проверяем метод DELETE контроллера user.")
     void whenCheckDeleteMethod() {
-        userController.create(userDtoTestOne).get();
-        UserDto userDto = userController.create(userDtoTestTwo).get();
+        userController.create(userDtoTestOne);
+        UserDto userDto = userController.create(userDtoTestTwo);
         userController.delete(1);
 
         List<UserDto> userDtosOne = userController.findAll();
@@ -108,13 +108,6 @@ class UserControllerTest {
         //test
         assertEquals(1, userDtosOne.size(), "Размер списка должен быть равен 1.");
         assertEquals(userDto, userDtosOne.get(0), "Пользователи должны совпадать.");
-
-        userController.delete(3);
-        List<UserDto> userDtosTwo = userController.findAll();
-
-        //test
-        assertEquals(1, userDtosTwo.size(), "Размер списка должен быть равен 1.");
-        assertEquals(userDto, userDtosTwo.get(0), "Пользователи должны совпадать.");
 
         userController.delete(2);
         List<UserDto> userDtosThree = userController.findAll();
