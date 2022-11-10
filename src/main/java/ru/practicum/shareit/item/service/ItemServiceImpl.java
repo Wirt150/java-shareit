@@ -79,8 +79,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Comment addComment(final Comment comment, final long author, final long itemId) {
-        bookingRepository.
-                findFirstByBookerIdAndItemIdAndStatusNotLikeAndEndBefore(author, itemId, BookingStatus.REJECTED, comment.getCreated())
+        bookingRepository.findFirstByBookerIdAndItemIdAndStatusNotLikeAndEndBefore(author, itemId, BookingStatus.REJECTED, comment.getCreated())
                 .orElseThrow(() -> new CommentIllegalException(author, itemId));
         comment.setItem(this.getById(itemId, author));
         comment.setAuthor(userService.getById(author));
