@@ -9,12 +9,11 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
-import ru.practicum.shareit.user.model.UserDto;
+import ru.practicum.shareit.user.entity.model.UserDto;
 import ru.practicum.shareit.user.service.UserService;
 
 import javax.validation.Valid;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @RestController
@@ -23,7 +22,7 @@ import java.util.stream.Collectors;
 @Tag(name = "Контроллер пользователей", description = "Взаимодействие с эндпоинтами сущности User")
 @ApiResponses(
         value = {
-                @ApiResponse(responseCode = "400", description = "Ошибка валидации"),
+                @ApiResponse(responseCode = "201", description = "Создано"),
                 @ApiResponse(responseCode = "404", description = "Неверный id"),
                 @ApiResponse(responseCode = "409", description = "Не уникальный email"),
                 @ApiResponse(responseCode = "500", description = "Непредвиденная ошибка"),
@@ -46,7 +45,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public List<UserDto> findAll() {
-        return userService.getAllDto().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
+        return userService.getAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @Operation(
@@ -61,8 +60,8 @@ public class UserController {
             })
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("{id}")
-    public Optional<UserDto> findById(@PathVariable @Parameter(description = "id пользователя") final long id) {
-        return userService.getDtoById(id).map(UserMapper::toUserDto);
+    public UserDto findById(@PathVariable @Parameter(description = "id пользователя") final long id) {
+        return UserMapper.toUserDto(userService.getById(id));
     }
 
     @Operation(
@@ -77,8 +76,8 @@ public class UserController {
             })
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
-    public Optional<UserDto> create(@Valid @RequestBody final UserDto dto) {
-        return userService.addDto(UserMapper.toUser(dto)).map(UserMapper::toUserDto);
+    public UserDto create(@Valid @RequestBody final UserDto dto) {
+        return UserMapper.toUserDto(userService.add(UserMapper.toUser(dto)));
     }
 
     @Operation(
@@ -93,10 +92,10 @@ public class UserController {
             })
     @ResponseStatus(HttpStatus.OK)
     @PatchMapping("{id}")
-    public Optional<UserDto> update(
+    public UserDto update(
             @RequestBody final UserDto dto,
             @PathVariable @Parameter(description = "id пользователя") final long id) {
-        return userService.updateDto(UserMapper.toUser(dto), id).map(UserMapper::toUserDto);
+        return UserMapper.toUserDto(userService.update(UserMapper.toUser(dto), id));
     }
 
     @Operation(summary = "Удаление пользователя по его id")
@@ -107,7 +106,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @DeleteMapping("{id}")
     public void delete(@PathVariable @Parameter(description = "id пользователя") final long id) {
-        userService.deleteDto(id);
+        userService.delete(id);
     }
 }
 
