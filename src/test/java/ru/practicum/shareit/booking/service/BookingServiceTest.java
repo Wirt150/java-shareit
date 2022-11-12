@@ -53,7 +53,7 @@ class BookingServiceTest {
             .build();
 
     private final Booking booking = Booking.builder()
-            .id(1)
+            .id(1L)
             .item(itemTest)
             .booker(userTest)
             .build();

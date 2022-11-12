@@ -29,8 +29,8 @@ public class ItemServiceImpl implements ItemService {
     private static final int NEXT_BOOKING = 1;
     private static final int ONE_USER = 1;
 
-    private final ItemRepository itemRepository;
     private final UserService userService;
+    private final ItemRepository itemRepository;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
 
