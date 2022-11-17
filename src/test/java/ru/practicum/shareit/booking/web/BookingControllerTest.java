@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.entity.constart.BookingStatus;
 import ru.practicum.shareit.booking.entity.model.BookingDtoRequest;
 import ru.practicum.shareit.booking.entity.model.BookingDtoResponse;
@@ -24,6 +25,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 @SpringBootTest
 @ActiveProfiles("test")
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@Transactional
 class BookingControllerTest {
     private static final long BOOKING_ID_ONE = 1L;
     private static final long BOOKING_ID_TWO = 2L;

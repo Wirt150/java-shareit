@@ -45,6 +45,7 @@ public class UserController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping
     public List<UserDto> findAll() {
+
         return userService.getAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
