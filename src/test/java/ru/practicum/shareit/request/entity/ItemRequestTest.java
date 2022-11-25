@@ -25,13 +25,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JsonTest
 class ItemRequestTest {
-
     @Autowired
     private JacksonTester<ItemRequest> json;
     @Autowired
     private JacksonTester<ItemRequestDto> jsonDto;
-
-    private final Timestamp timestamp = Timestamp.valueOf(LocalDateTime.of(2022, 10, 10, 10, 10));
+    private final Timestamp timestamp = Timestamp.valueOf("2022-10-10 10:10:00");
     private final User user = User.builder()
             .id(1L)
             .email("test@test.test")
@@ -45,7 +43,6 @@ class ItemRequestTest {
             .owner(user)
             .available(true)
             .build();
-
 
     @Test
     @DisplayName("Проверяем правильность сериализации.")

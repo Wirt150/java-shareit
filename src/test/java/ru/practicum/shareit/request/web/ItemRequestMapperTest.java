@@ -46,7 +46,7 @@ class ItemRequestMapperTest {
         assertThat(itemRequest, notNullValue());
         assertThat(itemRequest.getId(), equalTo(itemRequestTest.getId()));
         assertThat(itemRequest.getDescription(), equalTo(itemRequestTest.getDescription()));
-        assertThat(itemRequest.getCreated(), equalTo(Timestamp.from(Instant.now())));
+        assertThat(itemRequest.getCreated(), notNullValue());
         assertThat(itemRequest.getItems().size(), equalTo(0));
     }
 }

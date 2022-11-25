@@ -27,8 +27,7 @@ class CommentTest {
     private JacksonTester<Comment> json;
     @Autowired
     private JacksonTester<CommentDto> jsonDto;
-    private final Timestamp timestamp = Timestamp.valueOf(LocalDateTime.of(2022, 10, 10, 10, 10));
-
+    private final Timestamp timestamp = Timestamp.valueOf("2022-10-10 10:10:00");
     private final User user = User.builder()
             .id(1L)
             .email("test@test.test")

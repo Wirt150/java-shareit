@@ -33,8 +33,8 @@ class BookingTest {
     private JacksonTester<BookingDtoResponse> jsonDtoResponse;
     @Autowired
     private JacksonTester<BookingDtoRequest> jsonDtoRequest;
-    private final Timestamp timestampStart = Timestamp.valueOf(LocalDateTime.of(2022, 10, 10, 10, 10));
-    private final Timestamp timestampEnd = Timestamp.valueOf(LocalDateTime.of(2023, 10, 10, 10, 10));
+    private final Timestamp timestampStart = Timestamp.valueOf("2022-10-10 10:10:00");
+    private final Timestamp timestampEnd = Timestamp.valueOf("2023-10-10 10:10:00");
     private Item item = Item.builder()
             .id(1L)
             .name("test")
