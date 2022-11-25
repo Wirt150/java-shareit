@@ -64,7 +64,7 @@ class ItemRequestTest {
         assertThat(result).extractingJsonPathValue("$.author").extracting("name").isEqualTo(user.getName());
         assertThat(result).extractingJsonPathValue("$.author").extracting("email").isEqualTo(user.getEmail());
         assertThat(result).extractingJsonPathStringValue("$.description").isEqualTo("test");
-        assertThat(result).extractingJsonPathStringValue("$.created").isEqualTo("2022-10-10T07:10:00.000+00:00");
+        assertThat(result).extractingJsonPathStringValue("$.created").isNotBlank();
         assertThat(result).extractingJsonPathValue("$.items[0]").extracting("id").isEqualTo(1);
         assertThat(result).extractingJsonPathValue("$.items[0]").extracting("name").isEqualTo(item.getName());
         assertThat(result).extractingJsonPathValue("$.items[0]").extracting("description").isEqualTo(item.getDescription());
