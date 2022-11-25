@@ -1,120 +1,147 @@
 package ru.practicum.shareit.user.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.user.entity.User;
 import ru.practicum.shareit.user.entity.model.UserDto;
+import ru.practicum.shareit.user.service.UserService;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
-@Transactional
+@WebMvcTest(controllers = UserController.class)
 class UserControllerTest {
+    @MockBean
+    private UserService userService;
     @Autowired
-    private UserController userController;
-    private final UserDto userDtoTestOne = UserDto.builder()
-            .id(0L)
-            .name("TestName1")
-            .email("test1@test.test")
-            .build();
-    private final UserDto userDtoTestTwo = UserDto.builder()
-            .id(0L)
-            .name("TestName2")
-            .email("test2@test.test")
-            .build();
+    private ObjectMapper mapper;
+    @Autowired
+    private MockMvc mvc;
+    private User user;
+    private UserDto userDto;
 
-    @Test
-    @DisplayName("Проверяем метод GET(все id) контроллера user.")
-    void whenCheckGetAllIdMethod() {
-        UserDto userDtoOne = userController.create(userDtoTestOne);
-        UserDto userDtoTwo = userController.create(userDtoTestTwo);
+    @BeforeEach
+    void setUp() {
+        user = User.builder()
+                .id(1L)
+                .email("test@test.test")
+                .name("test")
+                .build();
+        userDto = UserDto.builder()
+                .id(1L)
+                .email("test@test.test")
+                .name("test")
+                .build();
+        reset(
+                userService
+        );
+    }
 
-        //test
-        List<UserDto> userDtos = userController.findAll();
-        assertEquals(2, userDtos.size(), "Размер списка должен быть равен 2.");
-        assertEquals(userDtoOne, userDtos.get(0), "Пользователи должны совпадать.");
-        assertEquals(userDtoTwo, userDtos.get(1), "Пользователи должны совпадать.");
+    @AfterEach
+    void mockVerify() {
+        verifyNoMoreInteractions(
+                userService
+        );
     }
 
     @Test
-    @DisplayName("Проверяем метод GET(id) контроллера user.")
-    void whenCheckGetIdMethod() {
-        UserDto userDtoOne = userController.create(userDtoTestOne);
-        UserDto userDtoTwo = userController.create(userDtoTestTwo);
+    @DisplayName("Проверяем эндпоинт create сервиса User.")
+    void createNewUserRequest() throws Exception {
+        when(userService.add(any(User.class))).thenReturn(user);
 
         //test
-        assertEquals(userDtoOne, userController.findById(1), "Пользователи должны совпадать.");
-        assertNotEquals(userDtoTwo, userController.findById(1), "Пользователи не должны совпадать");
-        assertEquals(userDtoTwo, userController.findById(2), "Пользователи должны совпадать.");
-        assertNotEquals(userDtoOne, userController.findById(2), "Пользователи не должны совпадать.");
+        mvc.perform(post("/users")
+                        .content(mapper.writeValueAsString(userDto))
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
+                .andExpect(jsonPath("$.email", is(user.getEmail())))
+                .andExpect(jsonPath("$.name", is(user.getName())));
+
+        verify(userService, times(1)).add(any(User.class));
     }
 
     @Test
-    @DisplayName("Проверяем метод POST контроллера user.")
-    void whenCheckCreateMethod() {
-        UserDto userDtoOne = userController.create(userDtoTestOne);
-        UserDto userDtoTwo = userController.create(userDtoTestTwo);
+    @DisplayName("Проверяем эндпоинт findById сервиса User.")
+    void findByIdUserRequest() throws Exception {
+        when(userService.getById(anyLong())).thenReturn(user);
 
         //test
-        assertEquals(userDtoOne, userController.findById(1), "Пользователи должны совпадать.");
-        assertEquals(1, userDtoOne.getId(), "Id должен быть равен 1.");
-        assertEquals("TestName1", userDtoOne.getName(), "Имя должно совпадать.");
-        assertEquals("test1@test.test", userDtoOne.getEmail(), "Почта должна совпадать.");
-        assertEquals(userDtoTwo, userController.findById(2), "Пользователи должны совпадать.");
-        assertEquals("TestName2", userDtoTwo.getName(), "Имя должно совпадать.");
-        assertEquals("test2@test.test", userDtoTwo.getEmail(), "Почта должна совпадать.");
+        mvc.perform(get("/users/1")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
+                .andExpect(jsonPath("$.email", is(user.getEmail())))
+                .andExpect(jsonPath("$.name", is(user.getName())));
+
+        verify(userService, times(1)).getById(anyLong());
     }
 
     @Test
-    @DisplayName("Проверяем метод PATCH контроллера user.")
-    void whenCheckUpdateMethod() {
-        UserDto userDto = userController.create(userDtoTestOne);
-        UserDto updateName = UserDto.builder().name("update").build();
-        UserDto updateEmail = UserDto.builder().email("update@update.com").build();
-
-        userController.update(updateName, 1);
+    @DisplayName("Проверяем эндпоинт findAll сервиса User.")
+    void findAllUserRequest() throws Exception {
+        when(userService.getAll()).thenReturn(List.of(user));
 
         //test
-        UserDto updateNameTest = userController.findById(1);
-        assertNotEquals(userDto, updateNameTest, "Пользователи не должны совпадать.");
-        assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
-        assertEquals("update", updateNameTest.getName(), "Имя должно совпадать.");
+        mvc.perform(get("/users")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(user.getId()), Long.class))
+                .andExpect(jsonPath("$[0].email", is(user.getEmail())))
+                .andExpect(jsonPath("$[0].name", is(user.getName())));
 
-        userController.update(updateEmail, 1);
-
-        //test
-        UserDto updateEmailTest = userController.findById(1);
-        assertNotEquals(userDto, updateNameTest, "Пользователи не должны совпадать.");
-        assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
-        assertEquals("update@update.com", updateEmailTest.getEmail(), "Email должен совпадать.");
+        verify(userService, times(1)).getAll();
     }
 
     @Test
-    @DisplayName("Проверяем метод DELETE контроллера user.")
-    void whenCheckDeleteMethod() {
-        userController.create(userDtoTestOne);
-        UserDto userDto = userController.create(userDtoTestTwo);
-        userController.delete(1);
-
-        List<UserDto> userDtosOne = userController.findAll();
+    @DisplayName("Проверяем эндпоинт update сервиса User.")
+    void updateUserRequest() throws Exception {
+        when(userService.update(user, 1L)).thenReturn(user);
 
         //test
-        assertEquals(1, userDtosOne.size(), "Размер списка должен быть равен 1.");
-        assertEquals(userDto, userDtosOne.get(0), "Пользователи должны совпадать.");
+        mvc.perform(patch("/users/1")
+                        .content(mapper.writeValueAsString(userDto))
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(user.getId()), Long.class))
+                .andExpect(jsonPath("$.email", is(user.getEmail())))
+                .andExpect(jsonPath("$.name", is(user.getName())));
 
-        userController.delete(2);
-        List<UserDto> userDtosThree = userController.findAll();
+        verify(userService, times(1)).update(user, 1L);
+    }
 
+    @Test
+    @DisplayName("Проверяем эндпоинт delete сервиса User.")
+    void deleteUserRequest() throws Exception {
         //test
-        assertEquals(0, userDtosThree.size(), "Размер списка должен быть равен 0.");
+        mvc.perform(delete("/users/1")
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+
+        verify(userService, times(1)).delete(1L);
     }
 }
