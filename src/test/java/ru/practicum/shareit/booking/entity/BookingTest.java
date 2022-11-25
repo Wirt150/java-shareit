@@ -73,6 +73,8 @@ class BookingTest {
         assertThat(result).extractingJsonPathStringValue("$.start").isNotBlank();
         assertThat(result).extractingJsonPathStringValue("$.end").isNotBlank();
         assertThat(result).extractingJsonPathStringValue("$.status").isEqualTo(BookingStatus.WAITING.toString());
+        assertThat(booking).isEqualTo(booking);
+        assertThat(booking.hashCode()).isEqualTo(booking.hashCode());
     }
 
     @Test

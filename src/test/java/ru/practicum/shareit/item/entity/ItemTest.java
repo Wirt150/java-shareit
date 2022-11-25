@@ -63,6 +63,8 @@ class ItemTest {
         assertThat(result).extractingJsonPathValue("$.owner").extracting("name").isEqualTo(user.getName());
         assertThat(result).extractingJsonPathValue("$.owner").extracting("email").isEqualTo(user.getEmail());
         assertThat(result).extractingJsonPathBooleanValue("$.available").isTrue();
+        assertThat(item).isEqualTo(item);
+        assertThat(item.hashCode()).isEqualTo(item.hashCode());
     }
 
     @Test
