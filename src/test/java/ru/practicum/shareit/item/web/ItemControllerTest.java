@@ -1,200 +1,223 @@
 package ru.practicum.shareit.item.web;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.ActiveProfiles;
-import ru.practicum.shareit.booking.entity.model.BookingDtoResponse;
-import ru.practicum.shareit.booking.web.BookingController;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+import ru.practicum.shareit.item.entity.Comment;
+import ru.practicum.shareit.item.entity.Item;
 import ru.practicum.shareit.item.entity.model.CommentDto;
 import ru.practicum.shareit.item.entity.model.ItemDto;
-import ru.practicum.shareit.user.entity.model.UserDto;
-import ru.practicum.shareit.user.web.UserController;
+import ru.practicum.shareit.item.service.ItemService;
+import ru.practicum.shareit.user.entity.User;
 
+import java.nio.charset.StandardCharsets;
 import java.sql.Timestamp;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@SpringBootTest
-@ActiveProfiles("test")
-@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
+@WebMvcTest(controllers = ItemController.class)
 class ItemControllerTest {
+    private static final String USER_REQUEST_HEADER = "X-Sharer-User-Id";
 
-    private static final long USER_ID_ONE = 1L;
-    private static final long USER_ID_TWO = 2L;
+    @MockBean
+    private ItemService itemService;
     @Autowired
-    private ItemController itemController;
+    private ObjectMapper mapper;
     @Autowired
-    private UserController userController;
-    @Autowired
-    private BookingController bookingController;
+    private MockMvc mvc;
+    private Item item;
+    private ItemDto itemDto;
 
-    private final ItemDto itemDtoTestOne = ItemDto.builder()
-            .id(0L)
-            .name("TestName1")
-            .description("testDescription1")
-            .owner(1L)
-            .available(true)
-            .build();
-
-    private final ItemDto itemDtoTestTwo = ItemDto.builder()
-            .id(0L)
-            .name("TestName2")
-            .description("testDescription2")
-            .owner(1L)
-            .available(true)
-            .build();
-
-    private UserDto userDtoTestOne = UserDto.builder()
-            .id(0L)
-            .name("TestName")
+    private final User user = User.builder()
+            .id(1L)
             .email("test@test.test")
-            .build();
-
-    private UserDto userDtoTestTwo = UserDto.builder()
-            .id(0L)
-            .name("TestName2")
-            .email("test@test.test2")
+            .name("test")
             .build();
 
     @BeforeEach
     void setUp() {
-        userDtoTestOne = userController.create(userDtoTestOne);
-        userDtoTestTwo = userController.create(userDtoTestTwo);
-    }
-
-    @Test
-    @DisplayName("Проверяем метод GET(все id) контроллера item.")
-    void whenCheckGetAllIdMethod() {
-        ItemDto itemDtoOne = itemController.create(itemDtoTestOne, USER_ID_ONE);
-        ItemDto itemDtoTwo = itemController.create(itemDtoTestTwo, USER_ID_ONE);
-
-        //test
-        List<ItemDto> itemDtos = itemController.findAll(USER_ID_ONE);
-        assertEquals(2, itemDtos.size(), "Размер списка должен быть равен 2.");
-        assertEquals(itemDtoOne, itemDtos.get(0), "Вещи должны совпадать.");
-        assertEquals(itemDtoTwo, itemDtos.get(1), "Вещи должны совпадать.");
-    }
-
-    @Test
-    @DisplayName("Проверяем метод GET(id) контроллера item.")
-    void whenCheckGetIdMethod() {
-        ItemDto itemDtoOne = itemController.create(itemDtoTestOne, USER_ID_ONE);
-        ItemDto itemDtoTwo = itemController.create(itemDtoTestTwo, USER_ID_ONE);
-
-        //test
-        assertEquals(itemDtoOne, itemController.findById(1, USER_ID_ONE), "Вещи должны совпадать.");
-        assertNotEquals(itemDtoTwo, itemController.findById(1, USER_ID_ONE), "Вещи не должны совпадать");
-        assertEquals(itemDtoTwo, itemController.findById(2, USER_ID_ONE), "Вещи должны совпадать.");
-        assertNotEquals(itemDtoOne, itemController.findById(2, USER_ID_ONE), "Вещи не должны совпадать.");
-    }
-
-    @Test
-    @DisplayName("Проверяем метод POST контроллера item.")
-    void whenCheckCreateMethod() {
-        ItemDto itemDtoOne = itemController.create(itemDtoTestOne, USER_ID_ONE);
-        ItemDto itemDtoTwo = itemController.create(itemDtoTestTwo, USER_ID_ONE);
-
-        //test
-        assertEquals(itemDtoOne, itemController.findById(1, USER_ID_ONE), "Вещи должны совпадать.");
-        assertEquals(1, itemDtoOne.getId(), "Id должен быть равен 1.");
-        assertEquals("TestName1", itemDtoOne.getName(), "Имя должно совпадать.");
-        assertEquals("testDescription1", itemDtoOne.getDescription(), "Описание должно совпадать.");
-        assertEquals(userDtoTestOne.getId(), itemDtoOne.getOwner(), "Id пользователя должно совпадать.");
-        assertTrue(itemDtoOne.getAvailable(), "Доступность должна совпадать.");
-
-        assertEquals(itemDtoTwo, itemController.findById(2, USER_ID_ONE), "Вещи должны совпадать.");
-        assertEquals(2, itemDtoTwo.getId(), "Id должен быть равен 1.");
-        assertEquals("TestName2", itemDtoTwo.getName(), "Имя должно совпадать.");
-        assertEquals("testDescription2", itemDtoTwo.getDescription(), "Описание должно совпадать.");
-        assertEquals(userDtoTestOne.getId(), itemDtoTwo.getOwner(), "Id пользователя должно совпадать.");
-        assertTrue(itemDtoTwo.getAvailable(), "Доступность должна совпадать.");
-    }
-
-    @Test
-    @DisplayName("Проверяем метод PATCH контроллера item.")
-    void whenCheckUpdateMethod() {
-        ItemDto itemDto = itemController.create(itemDtoTestOne, USER_ID_ONE);
-        ItemDto updateName = ItemDto.builder().name("update").build();
-        ItemDto updateDescription = ItemDto.builder().description("update").build();
-        ItemDto updateAvailable = ItemDto.builder().available(false).build();
-
-        itemController.update(updateName, 1, USER_ID_ONE);
-
-        //test
-        ItemDto updateNameTest = itemController.findById(1, USER_ID_ONE);
-        assertNotEquals(itemDto, updateNameTest, "Пользователи не должны совпадать.");
-        assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
-        assertEquals("update", updateNameTest.getName(), "Имя должно совпадать.");
-
-        itemController.update(updateDescription, 1, USER_ID_ONE);
-
-        //test
-        ItemDto updateEmailTest = itemController.findById(1, USER_ID_ONE);
-        assertNotEquals(itemDto, updateNameTest, "Пользователи не должны совпадать.");
-        assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
-        assertEquals("update", updateEmailTest.getDescription(), "Описание должно совпадать.");
-
-        itemController.update(updateAvailable, 1, USER_ID_ONE);
-
-        //test
-        ItemDto updateAvailableTest = itemController.findById(1, USER_ID_ONE);
-        assertNotEquals(itemDto, updateNameTest, "Пользователи не должны совпадать.");
-        assertEquals(1, updateNameTest.getId(), "Id должен быть равен 1.");
-        assertFalse(updateAvailableTest.getAvailable(), "Доступность должна быть false.");
-    }
-
-    @Test
-    @DisplayName("Проверяем метод GET(search) контроллера item.")
-    void whenSearchByNameAndDescription() {
-        ItemDto itemDtoOne = itemController.create(itemDtoTestOne, USER_ID_ONE);
-        List<ItemDto> dtosOne = itemController.search("TeS", USER_ID_ONE);
-
-        //test
-        assertEquals(1, dtosOne.size(), "Размер списка должен равняться 1.");
-        assertEquals(itemDtoOne, dtosOne.get(0), "Размер списка должен равняться 1.");
-
-        ItemDto itemDtoTwo = itemController.create(itemDtoTestTwo, USER_ID_ONE);
-        List<ItemDto> dtosTwo = itemController.search("Tes", USER_ID_ONE);
-
-        //test
-        assertEquals(2, dtosTwo.size(), "Размер списка должен равняться 2.");
-        assertEquals(itemDtoOne, dtosOne.get(0), "Размер списка должен равняться 1.");
-        assertEquals(itemDtoTwo, dtosTwo.get(1), "Размер списка должен равняться 1.");
-    }
-
-    @Test
-    @DisplayName("Проверяем метод POST(comment) контроллера item.")
-    void whenAddComment() {
-        BookingDtoResponse bookingDto = BookingDtoResponse.builder()
-                .itemId(1)
-                .start(LocalDateTime.of(2000, 1, 1, 1, 1))
-                .end(LocalDateTime.of(2001, 1, 1, 1, 1))
+        item = Item.builder()
+                .id(1L)
+                .name("test")
+                .description("test")
+                .owner(user)
+                .available(true)
                 .build();
-        CommentDto commentDto = CommentDto.builder()
-                .id(0)
+        itemDto = ItemDto.builder()
+                .id(0L)
+                .name("test")
+                .description("test")
+                .owner(1L)
+                .available(true)
+                .build();
+        reset(
+                itemService
+        );
+    }
+
+    @AfterEach
+    void mockVerify() {
+        verifyNoMoreInteractions(
+                itemService
+        );
+    }
+
+    @Test
+    @DisplayName("Проверяем эндпоинт create сервиса Item.")
+    void createNewItem() throws Exception {
+        when(itemService.add(any(Item.class), anyLong())).thenReturn(item);
+
+        //test
+        mvc.perform(post("/items")
+                        .content(mapper.writeValueAsString(itemDto))
+                        .header(USER_REQUEST_HEADER, 1L)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON)
+                        .characterEncoding(StandardCharsets.UTF_8))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id", is(item.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(item.getName())))
+                .andExpect(jsonPath("$.description", is(item.getDescription())))
+                .andExpect(jsonPath("$.owner", is(user.getId().intValue())))
+                .andExpect(jsonPath("$.available", is(true)));
+
+        verify(itemService, times(1)).add(any(Item.class), anyLong());
+    }
+
+    @Test
+    @DisplayName("Проверяем эндпоинт findById сервиса Item.")
+    void findByIdItem() throws Exception {
+        when(itemService.getById(anyLong(), anyLong())).thenReturn(item);
+
+        //test
+        mvc.perform(get("/items/1")
+                        .header(USER_REQUEST_HEADER, 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(item.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(item.getName())))
+                .andExpect(jsonPath("$.description", is(item.getDescription())))
+                .andExpect(jsonPath("$.owner", is(user.getId().intValue())))
+                .andExpect(jsonPath("$.available", is(true)));
+
+        verify(itemService, times(1)).getById(anyLong(), anyLong());
+    }
+
+    @Test
+    @DisplayName("Проверяем эндпоинт findAll сервиса Item.")
+    void findAllItem() throws Exception {
+        when(itemService.getAll(anyLong(), anyInt(), anyInt())).thenReturn(List.of(item));
+
+        //test
+        mvc.perform(get("/items")
+                        .param("from", "0")
+                        .param("size", "10")
+                        .header(USER_REQUEST_HEADER, 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(item.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(item.getName())))
+                .andExpect(jsonPath("$[0].description", is(item.getDescription())))
+                .andExpect(jsonPath("$[0].owner", is(user.getId().intValue())))
+                .andExpect(jsonPath("$[0].available", is(true)));
+
+        verify(itemService, times(1)).getAll(anyLong(), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisplayName("Проверяем эндпоинт update сервиса Item.")
+    void updateItem() throws Exception {
+        when(itemService.update(any(Item.class), anyLong(), anyLong())).thenReturn(item);
+
+        //test
+        mvc.perform(patch("/items/1")
+                        .content(mapper.writeValueAsString(itemDto))
+                        .header(USER_REQUEST_HEADER, 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(item.getId()), Long.class))
+                .andExpect(jsonPath("$.name", is(item.getName())))
+                .andExpect(jsonPath("$.description", is(item.getDescription())))
+                .andExpect(jsonPath("$.owner", is(user.getId().intValue())))
+                .andExpect(jsonPath("$.available", is(true)));
+
+        verify(itemService, times(1)).update(any(Item.class), anyLong(), anyLong());
+    }
+
+    @Test
+    @DisplayName("Проверяем эндпоинт search сервиса Item.")
+    void searchItem() throws Exception {
+        when(itemService.search(anyString(), anyInt(), anyInt())).thenReturn(List.of(item));
+
+        //test
+        mvc.perform(get("/items/search")
+                        .param("from", "0")
+                        .param("size", "10")
+                        .param("text", "test")
+                        .header(USER_REQUEST_HEADER, 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$", hasSize(1)))
+                .andExpect(jsonPath("$[0].id", is(item.getId()), Long.class))
+                .andExpect(jsonPath("$[0].name", is(item.getName())))
+                .andExpect(jsonPath("$[0].description", is(item.getDescription())))
+                .andExpect(jsonPath("$[0].owner", is(user.getId().intValue())))
+                .andExpect(jsonPath("$[0].available", is(true)));
+
+        verify(itemService, times(1)).search(anyString(), anyInt(), anyInt());
+    }
+
+    @Test
+    @DisplayName("Проверяем эндпоинт addComment сервиса Item.")
+    void addCommentItem() throws Exception {
+        final Comment comment = Comment.builder()
+                .id(1L)
+                .item(item)
+                .author(user)
                 .text("test")
-                .authorName(userDtoTestTwo.getName())
-                .created(Timestamp.from(Instant.now()))
+                .created(Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 1, 1)))
                 .build();
 
-        ItemDto itemDto = itemController.create(itemDtoTestOne, USER_ID_ONE);
-        bookingController.create(bookingDto, USER_ID_TWO);
-        bookingController.update(itemDto.getId(), USER_ID_ONE, true);
-        itemController.addComment(commentDto, USER_ID_TWO, itemDto.getId());
+        final CommentDto commentDto = CommentDto.builder()
+                .id(1L)
+                .authorName(user.getName())
+                .text("test")
+                .created(Timestamp.valueOf(LocalDateTime.of(2020, 1, 1, 1, 1)))
+                .build();
 
-        ItemDto itemDtoTest = itemController.findById(1, 1);
+        when(itemService.addComment(any(Comment.class), anyLong(), anyLong())).thenReturn(comment);
 
         //test
-        assertEquals(1, itemDtoTest.getComments().size(), "Размер списка должен быть равен 1.");
-        assertEquals(1, itemDtoTest.getComments().get(0).getId(), "Id должны совпадать.");
-        assertEquals(itemDtoTest.getComments().get(0).getAuthorName(), userDtoTestTwo.getName(), "Имя автора должно совпадать.");
-        assertEquals(itemDtoTest.getComments().get(0).getText(), commentDto.getText(), "Комментарий должен совпадать.");
+        mvc.perform(post("/items/1/comment")
+                        .content(mapper.writeValueAsString(commentDto))
+                        .header(USER_REQUEST_HEADER, 1L)
+                        .characterEncoding(StandardCharsets.UTF_8)
+                        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id", is(comment.getId()), Long.class))
+                .andExpect(jsonPath("$.text", is(comment.getText())))
+                .andExpect(jsonPath("$.authorName", is(comment.getAuthor().getName())))
+                .andExpect(jsonPath("$.created", notNullValue()));
+
+        verify(itemService, times(1)).addComment(any(Comment.class), anyLong(), anyLong());
     }
 }

@@ -1,7 +1,9 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import ru.practicum.shareit.booking.entity.constart.BookingStatus;
 import ru.practicum.shareit.booking.entity.model.BookingDtoInfo;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class ItemServiceImpl implements ItemService {
 
     private static final int LAST_BOOKING = 0;
@@ -49,8 +52,8 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> getAll(final long userId) {
-        return itemRepository.findAllByOwnerIdOrderByIdAsc(userId).stream()
+    public List<Item> getAll(final long userId, final int from, final int size) {
+        return itemRepository.findAllByOwnerIdOrderByIdAsc(userId, PageRequest.of(from, size)).stream()
                 .map(item -> fillBookingInfoByItem(item, userId))
                 .map(this::fillCommentByItem)
                 .collect(Collectors.toList());
@@ -70,11 +73,11 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public List<Item> search(final String text) {
+    public List<Item> search(final String text, final int from, final int size) {
         if (!StringUtils.hasText(text)) {
             return Collections.emptyList();
         }
-        return itemRepository.findAllByNameOrDescriptionContainingIgnoreCaseAndAvailableTrue(text, text);
+        return itemRepository.findAllByNameOrDescriptionContainingIgnoreCaseAndAvailableTrue(text, text, PageRequest.of(from, size));
     }
 
     @Override

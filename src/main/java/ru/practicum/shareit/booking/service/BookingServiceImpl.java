@@ -1,7 +1,10 @@
 package ru.practicum.shareit.booking.service;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.entity.Booking;
 import ru.practicum.shareit.booking.entity.constart.BookingState;
 import ru.practicum.shareit.booking.entity.constart.BookingStatus;
@@ -21,60 +24,11 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class BookingServiceImpl implements BookingService {
-
     private final BookingRepository bookingRepository;
     private final ItemService itemService;
     private final UserService userService;
-
-    @Override
-    public List<Booking> findAll(final long bookerId, final String state) {
-        Timestamp timestampNow = Timestamp.from(Instant.now());
-        switch (bookingStateAndIdCheck(bookerId, state)) {
-            case ALL:
-                return bookingRepository.findAllByBookerIdOrderByStartDesc(bookerId);
-            case WAITING:
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.WAITING);
-            case REJECTED:
-                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.REJECTED);
-            case FUTURE:
-                return bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, timestampNow);
-            case CURRENT:
-                return bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId, timestampNow, timestampNow);
-            case PAST:
-                return bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, timestampNow);
-            default:
-                throw new UnknownStateException(state);
-        }
-    }
-
-    @Override
-    public List<Booking> findAllOwner(long ownerId, String state) {
-        Timestamp timestampNow = Timestamp.from(Instant.now());
-        switch (bookingStateAndIdCheck(ownerId, state)) {
-            case ALL:
-                return bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId);
-            case WAITING:
-                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING);
-            case REJECTED:
-                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED);
-            case FUTURE:
-                return bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, timestampNow);
-            case CURRENT:
-                return bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId, timestampNow, timestampNow);
-            case PAST:
-                return bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, timestampNow);
-            default:
-                throw new UnknownStateException(state);
-        }
-    }
-
-    @Override
-    public Booking getById(final long id, final long userId) {
-        return bookingRepository.findById(id)
-                .filter(b -> b.getBooker().getId() == userId || b.getItem().getOwner().getId() == userId)
-                .orElseThrow(() -> new BookingNotFoundException(id));
-    }
 
     @Override
     public Booking add(final Booking booking, final long bookerId) {
@@ -88,6 +42,57 @@ public class BookingServiceImpl implements BookingService {
         booking.setItem(itemService.getById(booking.getItem().getId(), bookerId));
         booking.setBooker(userService.getById(booking.getBooker().getId()));
         return bookingRepository.save(booking);
+    }
+
+    @Override
+    public Booking getById(final long id, final long userId) {
+        return bookingRepository.findById(id)
+                .filter(b -> b.getBooker().getId() == userId || b.getItem().getOwner().getId() == userId)
+                .orElseThrow(() -> new BookingNotFoundException(id));
+    }
+
+    @Override
+    public List<Booking> findAll(final long bookerId, final String state, final int from, final int size) {
+        PageRequest page = PageRequest.of(from, size);
+        Timestamp timestampNow = Timestamp.from(Instant.now());
+        switch (bookingStateAndIdCheck(bookerId, state)) {
+            case ALL:
+                return bookingRepository.findAll(PageRequest.of(from, size, Sort.by("start").descending())).toList();
+            case WAITING:
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.WAITING, page);
+            case REJECTED:
+                return bookingRepository.findAllByBookerIdAndStatusOrderByStartDesc(bookerId, BookingStatus.REJECTED, page);
+            case FUTURE:
+                return bookingRepository.findAllByBookerIdAndStartAfterOrderByStartDesc(bookerId, timestampNow, page);
+            case CURRENT:
+                return bookingRepository.findAllByBookerIdAndStartBeforeAndEndAfterOrderByStartDesc(bookerId, timestampNow, timestampNow, page);
+            case PAST:
+                return bookingRepository.findAllByBookerIdAndEndBeforeOrderByStartDesc(bookerId, timestampNow, page);
+            default:
+                throw new UnknownStateException(state);
+        }
+    }
+
+    @Override
+    public List<Booking> findAllBookingByOwner(final long ownerId, final String state, final int from, final int size) {
+        PageRequest page = PageRequest.of(from, size);
+        Timestamp timestampNow = Timestamp.from(Instant.now());
+        switch (bookingStateAndIdCheck(ownerId, state)) {
+            case ALL:
+                return bookingRepository.findAllByItemOwnerIdOrderByStartDesc(ownerId, page);
+            case WAITING:
+                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.WAITING, page);
+            case REJECTED:
+                return bookingRepository.findAllByItemOwnerIdAndStatusOrderByStartDesc(ownerId, BookingStatus.REJECTED, page);
+            case FUTURE:
+                return bookingRepository.findAllByItemOwnerIdAndStartAfterOrderByStartDesc(ownerId, timestampNow, page);
+            case CURRENT:
+                return bookingRepository.findAllByItemOwnerIdAndStartBeforeAndEndAfterOrderByStartDesc(ownerId, timestampNow, timestampNow, page);
+            case PAST:
+                return bookingRepository.findAllByItemOwnerIdAndEndBeforeOrderByStartDesc(ownerId, timestampNow, page);
+            default:
+                throw new UnknownStateException(state);
+        }
     }
 
     @Override

@@ -12,6 +12,7 @@ import ru.practicum.shareit.config.exception.message.Violation;
 import ru.practicum.shareit.item.error.CommentIllegalException;
 import ru.practicum.shareit.item.error.ItemNotFoundByUserException;
 import ru.practicum.shareit.item.error.ItemNotFoundException;
+import ru.practicum.shareit.request.error.ItemRequestNotFoundException;
 import ru.practicum.shareit.user.error.UserNotFoundException;
 import ru.practicum.shareit.user.error.UserRepeatEmailException;
 
@@ -44,7 +45,8 @@ public class GlobalExceptionController {
             UserNotFoundException.class,
             ItemNotFoundException.class,
             BookingNotFoundException.class,
-            ItemNotAccessException.class
+            ItemNotAccessException.class,
+            ItemRequestNotFoundException.class
     })
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse errorResponse(final EntityNotFoundException e) {

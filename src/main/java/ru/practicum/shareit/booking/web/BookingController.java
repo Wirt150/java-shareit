@@ -36,41 +36,22 @@ public class BookingController {
     private final BookingService bookingService;
 
     @Operation(
-            summary = "Запрос списка всех бронирований текущего пользователя",
-            description = "Выводит список бронирований отсортированных по времени у текущего пользователя (id)"
+            summary = "Создание нового бронирования",
+            description = "Создает новое бронирование вещи у определенного пользователя (id)"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Возвращает список всех бронирований",
+            description = "Возвращает новое бронирование",
             content = {
                     @Content(mediaType = "application/json")
             })
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping
-    public List<BookingDtoRequest> findAll(
-            @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long bookerId,
-            @Parameter(description = "State Booking") @RequestParam(value = "state", defaultValue = "ALL") final String state
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    public BookingDtoRequest create(
+            @Valid @RequestBody final BookingDtoResponse dto,
+            @Parameter(description = "Booker ID") @RequestHeader(USER_ID_HEADER) final long bookerId
     ) {
-        return bookingService.findAll(bookerId, state).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
-    }
-
-    @Operation(
-            summary = "Запрос списка всех забронированных вещей текущего пользователя",
-            description = "Выводит список забронированных вещей отсортированных по времени у текущего пользователя (id)"
-    )
-    @ApiResponse(
-            responseCode = "200",
-            description = "Возвращает список всех бронирований вещей",
-            content = {
-                    @Content(mediaType = "application/json")
-            })
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping("/owner")
-    public List<BookingDtoRequest> findAllOwner(
-            @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long bookerId,
-            @Parameter(description = "State Booking") @RequestParam(value = "state", defaultValue = "ALL") final String state
-    ) {
-        return bookingService.findAllOwner(bookerId, state).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
+        return BookingMapper.toBookingDto(bookingService.add(BookingMapper.toBooking(dto, bookerId), bookerId));
     }
 
     @Operation(
@@ -93,22 +74,45 @@ public class BookingController {
     }
 
     @Operation(
-            summary = "Создание нового бронирования",
-            description = "Создает новое бронирование вещи у определенного пользователя (id)"
+            summary = "Запрос списка всех бронирований текущего пользователя",
+            description = "Выводит список бронирований отсортированных по времени у текущего пользователя (id)"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Возвращает новое бронирование",
+            description = "Возвращает список всех бронирований",
             content = {
                     @Content(mediaType = "application/json")
             })
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    public BookingDtoRequest create(
-            @Valid @RequestBody final BookingDtoResponse dto,
-            @Parameter(description = "Booker ID") @RequestHeader(USER_ID_HEADER) final long bookerId
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public List<BookingDtoRequest> findAll(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "0") final int from,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") final int size,
+            @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long bookerId,
+            @Parameter(description = "State Booking") @RequestParam(value = "state", defaultValue = "ALL") final String state
     ) {
-        return BookingMapper.toBookingDto(bookingService.add(BookingMapper.toBooking(dto, bookerId), bookerId));
+        return bookingService.findAll(bookerId, state, from, size).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
+    }
+
+    @Operation(
+            summary = "Запрос списка всех забронированных вещей текущего пользователя",
+            description = "Выводит список забронированных вещей отсортированных по времени у текущего пользователя (id)"
+    )
+    @ApiResponse(
+            responseCode = "200",
+            description = "Возвращает список всех бронирований вещей",
+            content = {
+                    @Content(mediaType = "application/json")
+            })
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping("/owner")
+    public List<BookingDtoRequest> findAllOwner(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "0") final int from,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") final int size,
+            @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long bookerId,
+            @Parameter(description = "State Booking") @RequestParam(value = "state", defaultValue = "ALL") final String state
+    ) {
+        return bookingService.findAllBookingByOwner(bookerId, state, from, size).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
     @Operation(

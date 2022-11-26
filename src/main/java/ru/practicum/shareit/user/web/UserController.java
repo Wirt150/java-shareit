@@ -33,19 +33,19 @@ public class UserController {
     private final UserService userService;
 
     @Operation(
-            summary = "Запрос списка всех пользователей",
-            description = "Выводит список пользователей отсортированных по id"
+            summary = "Создание нового пользователя",
+            description = "Создает нового пользователя и присваивает id"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Возвращает список всех пользователей",
+            description = "Возвращает созданного пользователя",
             content = {
                     @Content(mediaType = "application/json")
             })
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping
-    public List<UserDto> findAll() {
-        return userService.getAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    public UserDto create(@Valid @RequestBody final UserDto dto) {
+        return UserMapper.toUserDto(userService.add(UserMapper.toUser(dto)));
     }
 
     @Operation(
@@ -65,19 +65,19 @@ public class UserController {
     }
 
     @Operation(
-            summary = "Создание нового пользователя",
-            description = "Создает нового пользователя и присваивает id"
+            summary = "Запрос списка всех пользователей",
+            description = "Выводит список пользователей отсортированных по id"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Возвращает созданного пользователя",
+            description = "Возвращает список всех пользователей",
             content = {
                     @Content(mediaType = "application/json")
             })
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    public UserDto create(@Valid @RequestBody final UserDto dto) {
-        return UserMapper.toUserDto(userService.add(UserMapper.toUser(dto)));
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public List<UserDto> findAll() {
+        return userService.getAll().stream().map(UserMapper::toUserDto).collect(Collectors.toList());
     }
 
     @Operation(

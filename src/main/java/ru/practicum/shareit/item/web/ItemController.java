@@ -36,21 +36,22 @@ public class ItemController {
     private final ItemService itemService;
 
     @Operation(
-            summary = "Запрос списка всех вещей определенного пользователя",
-            description = "Выводит список пользователей отсортированных по id у определенного пользователя (id)"
+            summary = "Создание новой вещи",
+            description = "Создает новую вещь у определенного пользователя (id)"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Возвращает список всех вещей",
+            description = "Возвращает созданную вещь",
             content = {
                     @Content(mediaType = "application/json")
             })
-    @ResponseStatus(HttpStatus.OK)
-    @GetMapping
-    public List<ItemDto> findAll(
+    @ResponseStatus(HttpStatus.CREATED)
+    @PostMapping
+    public ItemDto create(
+            @Valid @RequestBody final ItemDto dto,
             @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long userId
     ) {
-        return itemService.getAll(userId).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return ItemMapper.toItemDto(itemService.add(ItemMapper.toItem(dto, userId), userId));
     }
 
     @Operation(
@@ -73,22 +74,23 @@ public class ItemController {
     }
 
     @Operation(
-            summary = "Создание новой вещи",
-            description = "Создает новую вещь у определенного пользователя (id)"
+            summary = "Запрос списка всех вещей определенного пользователя",
+            description = "Выводит список пользователей отсортированных по id у определенного пользователя (id)"
     )
     @ApiResponse(
             responseCode = "200",
-            description = "Возвращает созданную вещь",
+            description = "Возвращает список всех вещей",
             content = {
                     @Content(mediaType = "application/json")
             })
-    @ResponseStatus(HttpStatus.CREATED)
-    @PostMapping
-    public ItemDto create(
-            @Valid @RequestBody final ItemDto dto,
+    @ResponseStatus(HttpStatus.OK)
+    @GetMapping
+    public List<ItemDto> findAll(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "0") final int from,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") final int size,
             @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long userId
     ) {
-        return ItemMapper.toItemDto(itemService.add(ItemMapper.toItem(dto, userId), userId));
+        return itemService.getAll(userId, from, size).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Operation(
@@ -113,7 +115,7 @@ public class ItemController {
 
     @Operation(
             summary = "Поиск по подстроке в описании или названии всех вещей",
-            description = "Ищет в базе соответствие поданной в параметр подстроки и возращает все совпадения"
+            description = "Ищет в базе соответствие поданной в параметр подстроки и возвращает все совпадения"
     )
     @ApiResponse(
             responseCode = "200",
@@ -124,10 +126,12 @@ public class ItemController {
     @ResponseStatus(HttpStatus.OK)
     @GetMapping("/search")
     public List<ItemDto> search(
+            @Parameter(description = "Page number") @RequestParam(defaultValue = "0") final int from,
+            @Parameter(description = "Page size") @RequestParam(defaultValue = "10") final int size,
             @Parameter(description = "Substring for search") @RequestParam("text") final String text,
             @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long userId
     ) {
-        return itemService.search(text).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
+        return itemService.search(text, from, size).stream().map(ItemMapper::toItemDto).collect(Collectors.toList());
     }
 
     @Operation(
