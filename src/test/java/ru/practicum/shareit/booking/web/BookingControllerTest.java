@@ -163,7 +163,7 @@ public class BookingControllerTest {
     @Test
     @DisplayName("Проверяем эндпоинт findAllOwner сервиса Booking.")
     void findAllOwnerBooking() throws Exception {
-        when(bookingService.findAllOwner(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(booking));
+        when(bookingService.findAllBookingByOwner(anyLong(), anyString(), anyInt(), anyInt())).thenReturn(List.of(booking));
 
         //test
         mvc.perform(get("/bookings/owner")
@@ -182,7 +182,7 @@ public class BookingControllerTest {
                 .andExpect(jsonPath("$[0].end", is("2024-10-10T10:10:00")))
                 .andExpect(jsonPath("$[0].status", is(BookingStatus.WAITING.toString())));
 
-        verify(bookingService, times(1)).findAllOwner(anyLong(), anyString(), anyInt(), anyInt());
+        verify(bookingService, times(1)).findAllBookingByOwner(anyLong(), anyString(), anyInt(), anyInt());
     }
 
     @Test

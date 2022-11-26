@@ -12,7 +12,7 @@ public interface BookingService {
 
     List<Booking> findAll(long bookerId, String state, int from, int size);
 
-    List<Booking> findAllOwner(long ownerId, String state, int from, int size);
+    List<Booking> findAllBookingByOwner(long ownerId, String state, int from, int size);
 
     Booking approved(long id, long owner, boolean approved);
 }

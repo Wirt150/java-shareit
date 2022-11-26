@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -115,8 +116,18 @@ class UserServiceTest {
     @Test
     @DisplayName("Ищем несуществующий Id и ловим UserNotFoundException")
     void testFindByIdNotFound() {
+        final RuntimeException exceptionId = assertThrows(
+                UserNotFoundException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        userService.getById(2L);
+                    }
+                });
+
         //test
-        assertThrows(UserNotFoundException.class, () -> userService.getById(2L));
+        assertEquals(exceptionId.getMessage(), String.format(String.format("Пользователь с id: %s не найден.", 2)),
+                "При несуществующем id должна выброситься ошибка");
 
         verify(mockUserRepository, times(1)).findById(2L);
     }
@@ -126,8 +137,18 @@ class UserServiceTest {
     void testAddUserRepeatEmailException() {
         when(mockUserRepository.save(user)).thenThrow(DataIntegrityViolationException.class);
 
+        final RuntimeException exceptionEmail = assertThrows(
+                UserRepeatEmailException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        userService.add(user);
+                    }
+                });
+
         //test
-        assertThrows(UserRepeatEmailException.class, () -> userService.add(user));
+        assertEquals(exceptionEmail.getMessage(), String.format("Пользователь c таким email: %s существует.", user.getEmail()),
+                "При одинаковых email должна выброситься ошибка");
 
         verify(mockUserRepository, times(1)).save(user);
     }

@@ -112,7 +112,7 @@ public class BookingController {
             @Parameter(description = "User ID") @RequestHeader(USER_ID_HEADER) final long bookerId,
             @Parameter(description = "State Booking") @RequestParam(value = "state", defaultValue = "ALL") final String state
     ) {
-        return bookingService.findAllOwner(bookerId, state, from, size).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
+        return bookingService.findAllBookingByOwner(bookerId, state, from, size).stream().map(BookingMapper::toBookingDto).collect(Collectors.toList());
     }
 
     @Operation(

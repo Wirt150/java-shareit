@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,6 +21,7 @@ import ru.practicum.shareit.item.service.ItemService;
 import ru.practicum.shareit.user.entity.User;
 import ru.practicum.shareit.user.service.UserService;
 
+import javax.persistence.EntityNotFoundException;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -201,7 +203,7 @@ class BookingServiceTest {
                 .findAllByItemOwnerIdOrderByStartDesc(anyLong(), any(PageRequest.class)))
                 .thenReturn(List.of(bookingTest));
         //test
-        List<Booking> all = bookingService.findAllOwner(1L, "ALL", 0, 10);
+        List<Booking> all = bookingService.findAllBookingByOwner(1L, "ALL", 0, 10);
         assertEquals(1L, all.get(0).getId());
         assertEquals(2L, all.get(0).getBooker().getId());
         assertEquals(item, all.get(0).getItem());
@@ -214,7 +216,7 @@ class BookingServiceTest {
                 .thenReturn(List.of(bookingTest));
 
         //test
-        List<Booking> waiting = bookingService.findAllOwner(1L, "WAITING", 0, 10);
+        List<Booking> waiting = bookingService.findAllBookingByOwner(1L, "WAITING", 0, 10);
         assertEquals(waiting.size(), 1);
 
         when(mockBookingRepository
@@ -222,7 +224,7 @@ class BookingServiceTest {
                 .thenReturn(List.of(bookingTest));
 
         //test
-        List<Booking> rejected = bookingService.findAllOwner(1L, "REJECTED", 0, 10);
+        List<Booking> rejected = bookingService.findAllBookingByOwner(1L, "REJECTED", 0, 10);
         assertEquals(rejected.size(), 1);
 
         when(mockBookingRepository
@@ -230,7 +232,7 @@ class BookingServiceTest {
                 .thenReturn(List.of(bookingTest));
 
         //test
-        List<Booking> future = bookingService.findAllOwner(1L, "FUTURE", 0, 10);
+        List<Booking> future = bookingService.findAllBookingByOwner(1L, "FUTURE", 0, 10);
         assertEquals(future.size(), 1);
 
 
@@ -239,7 +241,7 @@ class BookingServiceTest {
                 .thenReturn(List.of(bookingTest));
 
         //test
-        List<Booking> current = bookingService.findAllOwner(1L, "CURRENT", 0, 10);
+        List<Booking> current = bookingService.findAllBookingByOwner(1L, "CURRENT", 0, 10);
         assertEquals(current.size(), 1);
 
         when(mockBookingRepository
@@ -247,7 +249,7 @@ class BookingServiceTest {
                 .thenReturn(List.of(bookingTest));
 
         //test
-        List<Booking> past = bookingService.findAllOwner(1L, "PAST", 0, 10);
+        List<Booking> past = bookingService.findAllBookingByOwner(1L, "PAST", 0, 10);
         assertEquals(past.size(), 1);
 
         verify(mockUserService, times(6)).getById(1L);
@@ -284,8 +286,18 @@ class BookingServiceTest {
     @Test
     @DisplayName("Ловим BookingNotFoundException")
     void testFindByIdNotFound() {
+        final EntityNotFoundException bookingNotFoundException = assertThrows(
+                BookingNotFoundException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        bookingService.getById(100L, 100L);
+                    }
+                });
+
         //test
-        assertThrows(BookingNotFoundException.class, () -> bookingService.getById(100L, 100L));
+        assertEquals(String.format("Бронирование с id: %s не найдено.", 100L), bookingNotFoundException.getMessage(),
+                "При несуществующем id должна выброситься ошибка.");
 
         verify(mockBookingRepository, times(1)).findById(anyLong());
     }
@@ -296,8 +308,18 @@ class BookingServiceTest {
         item.setAvailable(false);
         when(mockItemService.getById(1L, 1L)).thenReturn(item);
 
+        final RuntimeException itemNotAvailableException = assertThrows(
+                ItemNotAvailableException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        bookingService.add(bookingTest, 1L);
+                    }
+                });
+
         //test
-        assertThrows(ItemNotAvailableException.class, () -> bookingService.add(bookingTest, 1L));
+        assertEquals(String.format("Вещь с id: %s недоступна для бронирования.", 1L), itemNotAvailableException.getMessage(),
+                "При статусе доступа false должна выброситься ошибка.");
 
         verify(mockItemService, times(1)).getById(anyLong(), anyLong());
     }
@@ -308,8 +330,18 @@ class BookingServiceTest {
         item.setOwner(User.builder().id(2L).build());
         when(mockItemService.getById(anyLong(), anyLong())).thenReturn(item);
 
+        final RuntimeException itemNotAccessException = assertThrows(
+                ItemNotAccessException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        bookingService.add(bookingTest, 1L);
+                    }
+                });
+
         //test
-        assertThrows(ItemNotAccessException.class, () -> bookingService.add(bookingTest, 1L));
+        assertEquals(String.format("Бронирование с id: %s не доступно для этого пользователя.", 1L), itemNotAccessException.getMessage(),
+                "Ошибка доступа к бронированию определенного пользователя.");
 
         verify(mockItemService, times(1)).getById(anyLong(), anyLong());
     }
@@ -317,8 +349,17 @@ class BookingServiceTest {
     @Test
     @DisplayName("Ловим UnknownStateException")
     void testUnknownStateException() {
+        final RuntimeException unknownStateException = assertThrows(
+                UnknownStateException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        bookingService.findAll(1L, "UNSUPPORTED_STATUS", 0, 10);
+                    }
+                });
+
         //test
-        assertThrows(UnknownStateException.class, () -> bookingService.findAll(1L, "NON", 0, 10));
+        assertEquals("UNSUPPORTED_STATUS", unknownStateException.getMessage(), "Неизвестный статус.");
 
         verify(mockUserService, times(1)).getById(anyLong());
     }
@@ -326,8 +367,17 @@ class BookingServiceTest {
     @Test
     @DisplayName("ЛовимItemNotFoundByUserException")
     void testItemNotFoundByUserException() {
+        final RuntimeException itemNotFoundByUserException = assertThrows(
+                ItemNotFoundByUserException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        bookingService.approved(1L, 2L, true);
+                    }
+                });
+
         //test
-        assertThrows(ItemNotFoundByUserException.class, () -> bookingService.approved(1L, 2L, true));
+        assertEquals("Вещь с id: 1 у пользователя с id: 2 не найдена.", itemNotFoundByUserException.getMessage());
 
         verify(mockBookingRepository, times(1)).findById(1L);
     }
@@ -336,8 +386,18 @@ class BookingServiceTest {
     @DisplayName("Ловим BookingApproveNotAvailable")
     void testBookingApproveNotAvailable() {
         bookingTest.setStatus(BookingStatus.APPROVED);
+
+        final RuntimeException bookingApproveNotAvailable = assertThrows(
+                BookingApproveNotAvailable.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        bookingService.approved(1L, 1L, true);
+                    }
+                });
+
         //test
-        assertThrows(BookingApproveNotAvailable.class, () -> bookingService.approved(1L, 1L, true));
+        assertEquals("Статус бронирования : 1 уже подтвержден.", bookingApproveNotAvailable.getMessage());
 
         verify(mockBookingRepository, times(1)).findById(1L);
     }

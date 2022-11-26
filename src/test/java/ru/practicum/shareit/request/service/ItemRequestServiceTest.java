@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -134,8 +135,17 @@ class ItemRequestServiceTest {
     @Test
     @DisplayName("Ищем несуществующий Id и ловим ItemRequestNotFoundException")
     void testFindByIdNotFound() {
+        final RuntimeException itemRequestNotFoundException = assertThrows(
+                ItemRequestNotFoundException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        itemRequestService.getById(2L, 1L);
+                    }
+                });
+
         //test
-        assertThrows(ItemRequestNotFoundException.class, () -> itemRequestService.getById(2L, 1L));
+        assertEquals("Запрос с id: 2 не найден.", itemRequestNotFoundException.getMessage());
 
         verify(mockUserService, times(1)).getById(1L);
         verify(mockItemRequestRepository, times(1)).findById(2L);

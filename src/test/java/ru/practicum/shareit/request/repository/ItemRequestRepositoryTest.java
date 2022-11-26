@@ -7,8 +7,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
-import org.springframework.transaction.annotation.Propagation;
-import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.request.entity.ItemRequest;
 
 import java.util.List;
@@ -28,7 +26,6 @@ import static org.springframework.test.context.jdbc.Sql.ExecutionPhase.BEFORE_TE
         },
         webEnvironment = SpringBootTest.WebEnvironment.NONE
 )
-@Transactional(propagation = Propagation.NOT_SUPPORTED)
 @Sql(scripts = {
         "classpath:schema.sql",
         "classpath:sql_scripts/sql_scripts_item_request.sql"},

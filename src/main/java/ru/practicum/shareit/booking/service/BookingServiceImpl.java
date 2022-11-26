@@ -74,7 +74,7 @@ public class BookingServiceImpl implements BookingService {
     }
 
     @Override
-    public List<Booking> findAllOwner(final long ownerId, final String state, final int from, final int size) {
+    public List<Booking> findAllBookingByOwner(final long ownerId, final String state, final int from, final int size) {
         PageRequest page = PageRequest.of(from, size);
         Timestamp timestampNow = Timestamp.from(Instant.now());
         switch (bookingStateAndIdCheck(ownerId, state)) {

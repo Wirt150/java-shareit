@@ -4,6 +4,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -257,8 +258,18 @@ class ItemServiceTest {
     @Test
     @DisplayName("Ищем несуществующий Id и ловим ItemNotFoundException")
     void testFindByIdNotFound() {
+        final RuntimeException exceptionId = assertThrows(
+                ItemNotFoundException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        itemService.getById(2L, 2L);
+                    }
+                });
+
         //test
-        assertThrows(ItemNotFoundException.class, () -> itemService.getById(2L, 1L));
+        assertEquals(exceptionId.getMessage(), String.format("Вещь с id: %s не найдена.", 2),
+                "При несуществующем id должна выброситься ошибка");
 
         verify(mockItemRepository, times(1)).findById(2L);
     }
@@ -270,8 +281,17 @@ class ItemServiceTest {
                 .findFirstByBookerIdAndItemIdAndStatusNotLikeAndEndBefore(anyLong(), anyLong(), any(BookingStatus.class), any(Timestamp.class)))
                 .thenReturn(Optional.empty());
 
-        //test
-        assertThrows(CommentIllegalException.class, () -> itemService.addComment(commentTest, 2L, 2));
+        final RuntimeException exceptionComment = assertThrows(
+                CommentIllegalException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        itemService.addComment(commentTest, 1, 2);
+                    }
+                });
+
+        assertEquals(exceptionComment.getMessage(), String.format("Пользователь с id: %s не может оставить комментарий для вещи id: %s.", 1, 2),
+                "Пользователь не бронировавший вещь не может ее комментировать");
 
         verify(mockBookingRepository, times(1))
                 .findFirstByBookerIdAndItemIdAndStatusNotLikeAndEndBefore(anyLong(), anyLong(), any(BookingStatus.class), any(Timestamp.class));
@@ -280,8 +300,18 @@ class ItemServiceTest {
     @Test
     @DisplayName("Ищем несуществующий Id и ловим ItemNotFoundByUserException")
     void testItemNotFoundByUserException() {
+        final RuntimeException exceptionItemByUser = assertThrows(
+                ItemNotFoundByUserException.class,
+                new Executable() {
+                    @Override
+                    public void execute() throws Throwable {
+                        itemService.update(itemTest, 1, 2L);
+                    }
+                });
+
         //test
-        assertThrows(ItemNotFoundByUserException.class, () -> itemService.update(itemTest, 1L, 2L));
+        assertEquals(exceptionItemByUser.getMessage(), String.format("Вещь с id: %s у пользователя с id: %s не найдена.", 1, 2L),
+                "У пользователя не должно быть такой вещи.");
 
         verify(mockItemRepository, times(1)).findById(1L);
     }
