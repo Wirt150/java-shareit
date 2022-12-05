@@ -3,6 +3,9 @@ package ru.practicum.shareit.user.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -29,7 +32,7 @@ public class UserClient extends BaseClient {
         return post("", dto);
     }
 
-    //    @Cacheable(cacheNames = "user")
+    @Cacheable(cacheNames = "user")
     public ResponseEntity<Object> findById(final long id) {
         return get("/" + id);
     }
@@ -38,12 +41,12 @@ public class UserClient extends BaseClient {
         return get("");
     }
 
-    //    @CachePut(cacheNames = "user")
+    @CachePut(cacheNames = "user")
     public ResponseEntity<Object> update(final long id, UserDto dto) {
         return patch("/" + id, dto);
     }
 
-    //    @CacheEvict(cacheNames = "user")
+    @CacheEvict(cacheNames = "user")
     public void delete(final long id) {
         delete("/" + id);
     }

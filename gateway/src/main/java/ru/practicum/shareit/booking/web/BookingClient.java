@@ -3,6 +3,8 @@ package ru.practicum.shareit.booking.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -25,7 +27,7 @@ public class BookingClient extends BaseClient {
         return post("", userId, dto);
     }
 
-    //    @Cacheable(cacheNames = "booking")
+    @Cacheable(cacheNames = "booking")
     public ResponseEntity<Object> findById(final long id, final long userId) {
         return get("/" + id, userId);
     }
@@ -40,7 +42,7 @@ public class BookingClient extends BaseClient {
         return get("/owner?state={state}&from={from}&size={size}", userId, parameters);
     }
 
-    //    @CacheEvict(cacheNames = {"item", "booking"}, allEntries = true)
+    @CacheEvict(cacheNames = {"item", "booking"}, allEntries = true)
     public ResponseEntity<Object> update(final long id, final long owner, final boolean approved) {
         Map<String, Object> parameters = Map.of("approved", approved);
         return patch("/" + id + "?approved={approved}", owner, parameters, null);
