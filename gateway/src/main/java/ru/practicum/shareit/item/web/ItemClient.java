@@ -3,9 +3,6 @@ package ru.practicum.shareit.item.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -35,7 +32,7 @@ public class ItemClient extends BaseClient {
         return post("", userId, dto);
     }
 
-    @Cacheable(cacheNames = "item")
+    //    @Cacheable(cacheNames = "item")
     public ResponseEntity<Object> findById(final long id, final long userId) {
         return get("/" + id, userId);
     }
@@ -48,12 +45,12 @@ public class ItemClient extends BaseClient {
         return get("?from={from}&size={size}", userId, parameters);
     }
 
-    @CachePut(cacheNames = "item")
+    //    @CachePut(cacheNames = "item")
     public ResponseEntity<Object> update(final long id, ItemDto dto, final long userId) {
         return patch("/" + id, userId, dto);
     }
 
-    @CachePut(cacheNames = "item")
+    //    @CachePut(cacheNames = "item")
     public ResponseEntity<Object> search(final String text, final int from, final int size, final long userId) {
         Map<String, Object> parameters = Map.of(
                 "text", text,
@@ -63,7 +60,7 @@ public class ItemClient extends BaseClient {
         return get("/search?text={text}&from={from}&size={size}", userId, parameters);
     }
 
-    @CacheEvict(cacheNames = "item", allEntries = true)
+    //    @CacheEvict(cacheNames = "item", allEntries = true)
     public ResponseEntity<Object> addComment(CommentDto dto, long author, long itemId) {
         return post("/" + itemId + "/comment", author, dto);
     }

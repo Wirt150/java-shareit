@@ -3,7 +3,6 @@ package ru.practicum.shareit.request.web;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
@@ -31,7 +30,7 @@ public class ItemRequestClient extends BaseClient {
         return post("", userId, dto);
     }
 
-    @Cacheable(cacheNames = "itemRequest")
+    //    @Cacheable(cacheNames = "itemRequest")
     public ResponseEntity<Object> findById(final long id, final long userId) {
         return get("/" + id, userId);
     }
