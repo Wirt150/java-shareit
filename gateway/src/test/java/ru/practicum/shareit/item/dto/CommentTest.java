@@ -2,7 +2,6 @@ package ru.practicum.shareit.item.dto;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.autoconfigure.json.JsonTest;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
