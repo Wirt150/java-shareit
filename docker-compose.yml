@@ -14,8 +14,7 @@ services:
       - POSTGRES_PASSWORD=root
 
   server:
-    build: .
-    image: shareit_server_image
+    build: server
     container_name: shareit_server
     ports:
       - "9090:9090"
@@ -28,8 +27,7 @@ services:
       - POSTGRES_PASSWORD=root
 
   gateway:
-    build: .
-    image:  shareit_gateway_image
+    build: gateway
     container_name: shareit_gateway
     ports:
       - "8080:8080"
