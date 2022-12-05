@@ -9,15 +9,9 @@ import org.springframework.boot.test.json.JsonContent;
 import ru.practicum.shareit.item.entity.model.CommentDto;
 import ru.practicum.shareit.user.entity.User;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.sql.Timestamp;
-import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JsonTest
 class CommentTest {
@@ -81,44 +75,5 @@ class CommentTest {
         assertThat(result).extractingJsonPathStringValue("$.authorName").isEqualTo(user.getName());
         assertThat(result).extractingJsonPathStringValue("$.text").isEqualTo("test");
         assertThat(result).extractingJsonPathStringValue("$.created").isNotBlank();
-    }
-
-    @Test
-    @DisplayName("Создаем проверяемый объект без ошибок валидации.")
-    void whenCreateValidCommentDtoThenCreated() {
-
-        final CommentDto commentDto = CommentDto.builder()
-                .id(1L)
-                .text("test")
-                .authorName(user.getName())
-                .created(timestamp)
-                .build();
-
-        //test
-        assertEquals(0, testingValidator(commentDto).size(), "Список должен быть пустой.");
-    }
-
-    @Test
-    @DisplayName("Создаем проверяемый объект с ошибками валидации.")
-    void whenCreateValidCommentDtoThenNotCreated() {
-
-        final CommentDto commentDto = CommentDto.builder()
-                .id(1L)
-                .text("")
-                .authorName(user.getName())
-                .created(timestamp)
-                .build();
-
-        Set<ConstraintViolation<CommentDto>> errors = testingValidator(commentDto);
-        errors.stream().map(ConstraintViolation::getMessage).forEach(System.out::println);
-
-        //test
-        assertEquals(1, errors.size(), "Размер списка должен быть равен 1.");
-    }
-
-    private Set<ConstraintViolation<CommentDto>> testingValidator(CommentDto commentDto) {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        return validator.validate(commentDto);
     }
 }

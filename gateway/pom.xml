@@ -13,11 +13,6 @@
 
     <name>ShareIt Gateway</name>
 
-    <properties>
-        <swagger-annotations.version>2.2.6</swagger-annotations.version>
-        <springdoc-openapi-ui.version>1.6.13</springdoc-openapi-ui.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -45,6 +40,7 @@
             <artifactId>springdoc-openapi-ui</artifactId>
             <version>${springdoc-openapi-ui.version}</version>
         </dependency>
+
     </dependencies>
 
     <build>

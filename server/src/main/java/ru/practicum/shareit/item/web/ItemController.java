@@ -7,7 +7,6 @@ import ru.practicum.shareit.item.entity.model.CommentDto;
 import ru.practicum.shareit.item.entity.model.ItemDto;
 import ru.practicum.shareit.item.service.ItemService;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +21,7 @@ public class ItemController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public ItemDto create(
-            @Valid @RequestBody final ItemDto dto,
+            @RequestBody final ItemDto dto,
             @RequestHeader(USER_ID_HEADER) final long userId
     ) {
         return ItemMapper.toItemDto(itemService.add(ItemMapper.toItem(dto, userId), userId));
@@ -71,7 +70,7 @@ public class ItemController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping("{itemId}/comment")
     public CommentDto addComment(
-            @Valid @RequestBody final CommentDto dto,
+            @RequestBody final CommentDto dto,
             @RequestHeader(USER_ID_HEADER) final long author,
             @PathVariable long itemId
     ) {

@@ -17,7 +17,6 @@ import ru.practicum.shareit.user.error.UserNotFoundException;
 import ru.practicum.shareit.user.error.UserRepeatEmailException;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.ConstraintViolationException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -63,15 +62,6 @@ public class GlobalExceptionController {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleThrowable(final UnknownStateException e) {
         return new ErrorResponse("Unknown state: " + e.getMessage(), "Неверный статус операции");
-    }
-
-    @ExceptionHandler(ConstraintViolationException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ValidationErrorResponse onConstraintValidationException(final ConstraintViolationException e) {
-        final List<Violation> violations = e.getConstraintViolations().stream()
-                .map(violation -> new Violation(violation.getPropertyPath().toString(), violation.getMessage()))
-                .collect(Collectors.toList());
-        return new ValidationErrorResponse(violations);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

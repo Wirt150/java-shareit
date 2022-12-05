@@ -11,17 +11,10 @@ import ru.practicum.shareit.item.entity.model.ItemDtoRequestInfo;
 import ru.practicum.shareit.request.entity.model.ItemRequestDto;
 import ru.practicum.shareit.user.entity.User;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.sql.Timestamp;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @JsonTest
 class ItemRequestTest {
@@ -99,41 +92,5 @@ class ItemRequestTest {
         assertThat(result).extractingJsonPathValue("$.items[0]").extracting("name").isEqualTo(item.getName());
         assertThat(result).extractingJsonPathValue("$.items[0]").extracting("description").isEqualTo(item.getDescription());
         assertThat(result).extractingJsonPathValue("$.items[0]").extracting("available").isEqualTo(item.getAvailable());
-    }
-
-    @Test
-    @DisplayName("Создаем проверяемый объект без ошибок валидации.")
-    void whenCreateValidItemRequestDtoThenCreated() {
-
-        final ItemRequestDto itemRequestDtoTest = ItemRequestDto.builder()
-                .id(1L)
-                .description("test")
-                .created(LocalDateTime.now())
-                .items(List.of(ItemDtoRequestInfo.builder().build()))
-                .build();
-
-        //test
-        assertEquals(0, testingValidator(itemRequestDtoTest).size(), "Список должен быть пустой.");
-    }
-
-    @Test
-    @DisplayName("Создаем проверяемый объект с ошибками валидации.")
-    void whenCreateValidItemRequestDtoThenNotCreated() {
-
-        final ItemRequestDto itemRequestDtoTest = ItemRequestDto.builder()
-                .id(1L)
-                .description("")
-                .created(LocalDateTime.now())
-                .items(List.of(ItemDtoRequestInfo.builder().build()))
-                .build();
-
-        //test
-        assertEquals(1, testingValidator(itemRequestDtoTest).size(), "Размер списка должен быть равен 1.");
-    }
-
-    private Set<ConstraintViolation<ItemRequestDto>> testingValidator(ItemRequestDto itemRequestDto) {
-        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        Validator validator = factory.getValidator();
-        return validator.validate(itemRequestDto);
     }
 }

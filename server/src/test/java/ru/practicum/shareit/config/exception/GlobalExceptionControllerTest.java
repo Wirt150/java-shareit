@@ -7,8 +7,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.practicum.shareit.booking.error.*;
 import ru.practicum.shareit.config.exception.message.ErrorResponse;
-import ru.practicum.shareit.config.exception.message.ValidationErrorResponse;
-import ru.practicum.shareit.config.exception.message.Violation;
 import ru.practicum.shareit.item.error.CommentIllegalException;
 import ru.practicum.shareit.item.error.ItemNotFoundByUserException;
 import ru.practicum.shareit.item.error.ItemNotFoundException;
@@ -17,9 +15,7 @@ import ru.practicum.shareit.user.error.UserNotFoundException;
 import ru.practicum.shareit.user.error.UserRepeatEmailException;
 
 import javax.persistence.EntityNotFoundException;
-import javax.validation.ConstraintViolationException;
 import java.util.List;
-import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -84,17 +80,5 @@ public class GlobalExceptionControllerTest {
     void testUnknownStateException() {
         ErrorResponse responseEntity = controller.handleThrowable(new UnknownStateException("test"));
         assertNotNull(responseEntity);
-    }
-
-    @Test
-    @DisplayName("Test errorResponse onConstraintValidationException")
-    void testConstraintValidationException() {
-        ValidationErrorResponse responseEntity = controller.onConstraintValidationException(new ConstraintViolationException(Set.of()));
-        assertNotNull(responseEntity.getViolations());
-        assertNotNull(responseEntity);
-
-        Violation violation = new Violation("test", "test");
-        assertNotNull(violation.getErrors());
-        assertNotNull(violation.getMessage());
     }
 }

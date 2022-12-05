@@ -6,7 +6,6 @@ import org.springframework.web.bind.annotation.*;
 import ru.practicum.shareit.request.entity.model.ItemRequestDto;
 import ru.practicum.shareit.request.service.ItemRequestService;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -21,7 +20,7 @@ public class ItemRequestController {
     @ResponseStatus(HttpStatus.OK)
     @PostMapping
     public ItemRequestDto create(
-            @Valid @RequestBody final ItemRequestDto dto,
+            @RequestBody final ItemRequestDto dto,
             @RequestHeader(USER_ID_HEADER) final long authorId
     ) {
         return ItemRequestMapper.toItemRequestDto(itemRequestService.add(ItemRequestMapper.toItemRequest(dto, authorId), authorId));

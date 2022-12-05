@@ -7,7 +7,6 @@ import ru.practicum.shareit.booking.entity.model.BookingDtoRequest;
 import ru.practicum.shareit.booking.entity.model.BookingDtoResponse;
 import ru.practicum.shareit.booking.service.BookingService;
 
-import javax.validation.Valid;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,7 +21,7 @@ public class BookingController {
     @ResponseStatus(HttpStatus.CREATED)
     @PostMapping
     public BookingDtoRequest create(
-            @Valid @RequestBody final BookingDtoResponse dto,
+            @RequestBody final BookingDtoResponse dto,
             @RequestHeader(USER_ID_HEADER) final long bookerId
     ) {
         return BookingMapper.toBookingDto(bookingService.add(BookingMapper.toBooking(dto, bookerId), bookerId));
