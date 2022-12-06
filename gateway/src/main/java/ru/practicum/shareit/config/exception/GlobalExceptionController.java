@@ -15,47 +15,6 @@ import java.util.stream.Collectors;
 @RestControllerAdvice("ru.practicum.shareit")
 public class GlobalExceptionController {
 
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.CONFLICT)
-//    public ErrorResponse errorResponse(final UserRepeatEmailException e) {
-//        return new ErrorResponse("Ошибка поданных данных:", e.getMessage());
-//    }
-//
-//    @ExceptionHandler(value = {
-//            BookingApproveNotAvailable.class,
-//            ItemNotAvailableException.class,
-//            CommentIllegalException.class
-//    })
-//    @ResponseStatus(HttpStatus.BAD_REQUEST)
-//    public ErrorResponse errorResponse(final RuntimeException e) {
-//        return new ErrorResponse("Ошибка поданных данных:", e.getMessage());
-//    }
-//
-//    @ExceptionHandler(value = {
-//            ItemNotFoundByUserException.class,
-//            UserNotFoundException.class,
-//            ItemNotFoundException.class,
-//            BookingNotFoundException.class,
-//            ItemNotAccessException.class,
-//            ItemRequestNotFoundException.class
-//    })
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    public ErrorResponse errorResponse(final EntityNotFoundException e) {
-//        return new ErrorResponse("Ошибка поданных данных:", e.getMessage());
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ErrorResponse handleThrowable(final Throwable e) {
-//        return new ErrorResponse("Непредвиденная ошибка.", e.getMessage());
-//    }
-//
-//    @ExceptionHandler
-//    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-//    public ErrorResponse handleThrowable(final UnknownStateException e) {
-//        return new ErrorResponse("Unknown state: " + e.getMessage(), "Неверный статус операции");
-//    }
-
     @ExceptionHandler(ConstraintViolationException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ValidationErrorResponse onConstraintValidationException(final ConstraintViolationException e) {
