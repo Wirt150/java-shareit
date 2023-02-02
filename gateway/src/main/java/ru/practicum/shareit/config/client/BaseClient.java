@@ -12,7 +12,6 @@ public class BaseClient {
     private static final String USER_ID_HEADER = "X-Sharer-User-Id";
     protected final RestTemplate rest;
 
-
     public BaseClient(RestTemplate rest) {
         this.rest = rest;
     }
