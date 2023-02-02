@@ -20,9 +20,9 @@
 
 `./mvn package`
 
-`java -jar ewm-service/target/ewm-service-0.0.1-SNAPSHOT.jar`
+`java -jar gateway/target/gateway-0.0.1-SNAPSHOT.jar`
 
-`java -jar stats-server/target/stats-server-0.0.1-SNAPSHOT.jar`
+`java -jar server/target/server-0.0.1-SNAPSHOT.jar`
 
 ## Быстрый старт Docker
 ### Требования
